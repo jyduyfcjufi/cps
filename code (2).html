@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极速测试中心 - 专业反应力与CPS测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --dark: #1a202c;
+            --light: #f7fafc;
+            --border-radius: 24px;
+            --glow-color: rgba(102, 126, 234, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f0f23;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--light);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #16213e 100%);
+            overflow: hidden;
+        }
+
+        .bg-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp 15s infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(90vh) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(10vh) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(0) scale(0);
+            }
+        }
+
+        header {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 100;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px var(--glow-color)); }
+            to { filter: drop-shadow(0 0 20px var(--glow-color)); }
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem;
+            border-radius: 60px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .mode-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            background: transparent;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .mode-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+            transform: scale(1.05);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .game-container {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 900px;
+            min-height: 550px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .game-area {
+            padding: 3rem;
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .start-screen {
+            text-align: center;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .start-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: slideInFromTop 0.8s ease-out;
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .start-screen p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2.5rem;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 6px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.7);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .difficulty-selector, .duration-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn, .duration-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-btn:hover, .duration-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .difficulty-btn.active, .duration-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-color: transparent;
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .waiting-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .waiting-area.ready {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            animation: pulse 0.8s infinite;
+        }
+
+        .waiting-area.too-early {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            animation: shake 0.5s;
+        }
+
+        .waiting-area.waiting {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .status-text {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: bounceIn 0.6s;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .instruction-text {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        .result-display, .cps-result {
+            text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reaction-time, .cps-score {
+            font-size: 5rem;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: zoomIn 0.5s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .reaction-label {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .rating {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-bottom: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: flipIn 0.6s;
+        }
+
+        @keyframes flipIn {
+            from {
+                opacity: 0;
+                transform: rotateX(-90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotateX(0);
+            }
+        }
+
+        .rating.excellent {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        .rating.good {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            box-shadow: 0 4px 20px rgba(66, 153, 225, 0.4);
+        }
+
+        .rating.average {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+            box-shadow: 0 4px 20px rgba(237, 137, 54, 0.4);
+        }
+
+        .rating.slow {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+            box-shadow: 0 4px 20px rgba(245, 101, 101, 0.4);
+        }
+
+        .cps-area {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .cps-area:active {
+            transform: scale(0.98);
+        }
+
+        .cps-area.counting {
+            animation: pulse 0.5s infinite;
+        }
+
+        .cps-display {
+            font-size: 6rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+            animation: countUp 0.3s ease-out;
+        }
+
+        @keyframes countUp {
+            from {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .cps-label {
+            font-size: 1.8rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+        }
+
+        .cps-timer {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem 1.25rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cps-instruction {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .click-effect {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: clickRipple 0.8s ease-out;
+        }
+
+        @keyframes clickRipple {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFly 1s ease-out forwards;
+        }
+
+        @keyframes particleFly {
+            to {
+                transform: translate(var(--tx), var(--ty));
+                opacity: 0;
+            }
+        }
+
+        .cps-details {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2.5rem 0;
+        }
+
+        .cps-detail-item {
+            text-align: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .cps-detail-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cps-detail-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cps-detail-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .history-section {
+            background: rgba(26, 32, 44, 0.95);
+            padding: 2.5rem;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .history-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 3px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .history-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .history-time {
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .history-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        .achievement {
+            position: fixed;
+            top: 100px;
+            right: -450px;
+            background: rgba(26, 32, 44, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: right 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .achievement.show {
+            right: 20px;
+        }
+
+        .achievement-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f6d365, #fda085);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .achievement-text h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .achievement-text p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 作弊警告 */
+        .cheat-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(245, 101, 101, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            text-align: center;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cheat-warning.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .cheat-warning h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .cheat-warning p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .cheat-warning button {
+            padding: 0.75rem 2rem;
+            background: white;
+            color: var(--danger-color);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cheat-warning button:hover {
+            transform: scale(1.05);
+        }
+
+        /* 多指触控指示器 */
+        .touch-indicator {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: touchPulse 0.5s ease-out;
+        }
+
+        @keyframes touchPulse {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* 精度指示器 */
+        .precision-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .stats-bar {
+                gap: 1.5rem;
+            }
+
+            .game-area {
+                padding: 2rem;
+            }
+
+            .start-screen h1 {
+                font-size: 2.5rem;
+            }
+
+            .reaction-time, .cps-score {
+                font-size: 4rem;
+            }
+
+            .status-text {
+                font-size: 2.5rem;
+            }
+
+            .cps-display {
+                font-size: 4rem;
+            }
+
+            .cps-details {
+                gap: 1.5rem;
+                flex-direction: column;
+            }
+
+            .difficulty-selector, .duration-selector {
+                gap: 0.5rem;
+            }
+
+            .difficulty-btn, .duration-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation" id="bgAnimation"></div>
+    
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <span>极速测试中心</span>
+            </div>
+            
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="reaction">反应力测试</button>
+                <button class="mode-btn" data-mode="cps">CPS测试</button>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">最佳成绩</span>
+                    <span class="stat-value" id="bestTime">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">平均成绩</span>
+                    <span class="stat-value" id="avgTime">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">测试次数</span>
+                    <span class="stat-value" id="totalTests">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="game-container">
+            <div class="game-area" id="gameArea">
+                <!-- 动态内容 -->
+            </div>
+
+            <div class="history-section">
+                <h2 class="history-title">📊 历史记录</h2>
+                <div class="history-list" id="historyList">
+                    <p style="color: rgba(255, 255, 255, 0.5); text-align: center;">暂无测试记录</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="achievement" id="achievement">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-text">
+            <h3 id="achievementTitle">新纪录！</h3>
+            <p id="achievementDesc">你创造了新的最佳成绩</p>
+        </div>
+    </div>
+
+    <div class="cheat-warning" id="cheatWarning">
+        <h2>⚠️ 检测到异常行为</h2>
+        <p id="cheatMessage">系统检测到可能的作弊行为，请正常进行测试。</p>
+        <button onclick="speedTestCenter.hideCheatWarning()">我知道了</button>
+    </div>
+
+    <script>
+        class SpeedTestCenter {
+            constructor() {
+                this.gameArea = document.getElementById('gameArea');
+                this.historyList = document.getElementById('historyList');
+                this.bestTimeEl = document.getElementById('bestTime');
+                this.avgTimeEl = document.getElementById('avgTime');
+                this.totalTestsEl = document.getElementById('totalTests');
+                this.progressBar = document.getElementById('progressBar');
+                this.achievement = document.getElementById('achievement');
+                this.cheatWarning = document.getElementById('cheatWarning');
+                this.cheatMessage = document.getElementById('cheatMessage');
+                
+                this.currentMode = 'reaction';
+                this.reactionTest = new ReactionTest(this);
+                this.cpsTest = new CPSTest(this);
+                
+                this.init();
+                this.createBackgroundParticles();
+            }
+            
+            init() {
+                // 模式切换
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.switchMode(e.target.dataset.mode);
+                    });
+                });
+                
+                this.reactionTest.showStartScreen();
+            }
+            
+            createBackgroundParticles() {
+                const bgAnimation = document.getElementById('bgAnimation');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'bg-particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 15 + 's';
+                    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                    bgAnimation.appendChild(particle);
+                }
+            }
+            
+            switchMode(mode) {
+                this.currentMode = mode;
+                if (mode === 'reaction') {
+                    this.reactionTest.showStartScreen();
+                    this.reactionTest.updateStats();
+                    this.reactionTest.displayHistory();
+                } else if (mode === 'cps') {
+                    this.cpsTest.showStartScreen();
+                    this.cpsTest.updateStats();
+                    this.cpsTest.displayHistory();
+                }
+            }
+            
+            showAchievement(title, desc) {
+                document.getElementById('achievementTitle').textContent = title;
+                document.getElementById('achievementDesc').textContent = desc;
+                this.achievement.classList.add('show');
+                
+                setTimeout(() => {
+                    this.achievement.classList.remove('show');
+                }, 4000);
+            }
+            
+            showCheatWarning(message) {
+                this.cheatMessage.textContent = message;
+                this.cheatWarning.classList.add('show');
+            }
+            
+            hideCheatWarning() {
+                this.cheatWarning.classList.remove('show');
+            }
+        }
+
+        class AntiCheatSystem {
+            constructor() {
+                this.suspiciousPatterns = [];
+                this.clickTimestamps = [];
+                this.touchPoints = new Set();
+                this.isMultiTouch = false;
+            }
+            
+            recordClick(timestamp) {
+                this.clickTimestamps.push(timestamp);
+                
+                // 保持最近100次点击记录
+                if (this.clickTimestamps.length > 100) {
+                    this.clickTimestamps.shift();
+                }
+                
+                // 检测异常点击模式
+                this.detectAnomalies();
+            }
+            
+            recordTouch(touchId) {
+                this.touchPoints.add(touchId);
+                if (this.touchPoints.size > 1) {
+                    this.isMultiTouch = true;
+                }
+            }
+            
+            clearTouchPoints() {
+                this.touchPoints.clear();
+                this.isMultiTouch = false;
+            }
+            
+            detectAnomalies() {
+                if (this.clickTimestamps.length < 10) return;
+                
+                const recentClicks = this.clickTimestamps.slice(-10);
+                const intervals = [];
+                
+                for (let i = 1; i < recentClicks.length; i++) {
+                    intervals.push(recentClicks[i] - recentClicks[i-1]);
+                }
+                
+                // 检测过于规律的点击（机器人行为）
+                const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                const variance = intervals.reduce((sum, interval) => {
+                    return sum + Math.pow(interval - avgInterval, 2);
+                }, 0) / intervals.length;
+                
+                // 方差太小说明点击过于规律
+                if (variance < 5 && avgInterval < 50) {
+                    return 'robotic';
+                }
+                
+                // 检测超高速点击（不可能的速度）
+                if (avgInterval < 10) {
+                    return 'impossible';
+                }
+                
+                return null;
+            }
+            
+            checkMultiTouch() {
+                return this.isMultiTouch;
+            }
+        }
+
+        class ReactionTest {
+            constructor(parent) {
+                this.parent = parent;
+                this.history = JSON.parse(localStorage.getItem('reactionHistory')) || [];
+                this.bestTime = localStorage.getItem('reactionBestTime') || null;
+                this.mode = 'easy';
+                this.modeSettings = {
+                    easy: { minDelay: 2000, maxDelay: 5000 },
+                    normal: { minDelay: 1000, maxDelay: 4000 },
+                    hard: { minDelay: 500, maxDelay: 3000 }
+                };
+                
+                this.state = 'idle';
+                this.startTime = null;
+                this.timeoutId = null;
+                this.antiCheat = new AntiCheatSystem();
+                this.performanceMonitor = new PerformanceMonitor();
+            }
+            
+            showStartScreen() {
+                this.state = 'idle';
+                this.parent.gameArea.innerHTML = `
+                    <div class="start-screen">
+                        <h1>⚡ 反应力测试</h1>
+                        <p>测试你的反应速度有多快！<br>当屏幕变成绿色时，立即点击！</p>
+                        
+                        <div class="difficulty-selector">
+                            <button class="difficulty-btn active" data-mode="easy">简单模式</button>
+                            <button class="difficulty-btn" data-mode="normal">普通模式</button>
+                            <button class="difficulty-btn" data-mode="hard">困难模式</button>
+                        </div>
+
+                        <button class="btn btn-primary" id="startBtn">开始测试</button>
+                    </div>
+                `;
+                
+                const startBtn = document.getElementById('startBtn');
+                startBtn.addEventListener('click', () => this.startTest());
+                
+                // 难度选择
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.mode = e.target.dataset.mode;
+                    });
+                });
+            }
+            
+            startTest() {
+                this.state = 'waiting';
+                this.performanceMonitor.start();
+                
+                this.parent.gameArea.innerHTML = `
+                    <div class="waiting-area waiting" id="waitingArea">
+                        <div class="status-text">等待...</div>
+                        <div class="instruction-text">当背景变成绿色时立即点击！</div>
+                        <div class="precision-indicator">精度: <span id="precision">0</span>ms</div>
+                    </div>
+                `;
+                
+                const waitingArea = document.getElementById('waitingArea');
+                
+                // 支持多指触控
+                waitingArea.addEventListener('click', (e) => this.handleClick(e));
+                waitingArea.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+                waitingArea.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+                
+                const settings = this.modeSettings[this.mode];
+                const delay = Math.random() * (settings.maxDelay - settings.minDelay) + settings.minDelay;
+                
+                this.timeoutId = setTimeout(() => {
+                    this.state = 'ready';
+                    waitingArea.className = 'waiting-area ready pulse';
+                    waitingArea.innerHTML = `
+                        <div class="status-text">点击！</div>
+                        <div class="instruction-text">快速点击屏幕！</div>
+                        <div class="precision-indicator">精度: <span id="precision">0</span>ms</div>
+                    `;
+                    this.startTime = performance.now();
+                    this.updatePrecision();
+                }, delay);
+            }
+            
+            updatePrecision() {
+                if (this.state !== 'ready') return;
+                
+                const precision = Math.round(performance.now() - this.startTime);
+                document.getElementById('precision').textContent = precision;
+                
+                requestAnimationFrame(() => this.updatePrecision());
+            }
+            
+            handleTouchStart(e) {
+                e.preventDefault();
+                for (let touch of e.changedTouches) {
+                    this.antiCheat.recordTouch(touch.identifier);
+                    this.createTouchIndicator(e.target, touch);
+                }
+            }
+            
+            handleTouchEnd(e) {
+                e.preventDefault();
+                this.antiCheat.clearTouchPoints();
+                this.handleClick(e);
+            }
+            
+            createTouchIndicator(element, touch) {
+                const indicator = document.createElement('div');
+                indicator.className = 'touch-indicator';
+                const rect = element.getBoundingClientRect();
+                indicator.style.left = (touch.clientX - rect.left - 40) + 'px';
+                indicator.style.top = (touch.clientY - rect.top - 40) + 'px';
+                element.appendChild(indicator);
+                
+                setTimeout(() => indicator.remove(), 500);
+            }
+            
+            handleClick(e) {
+                // 检测多指触控作弊
+                if (this.antiCheat.checkMultiTouch()) {
+                    this.parent.showCheatWarning('检测到多指触控，请使用单指进行测试！');
+                    return;
+                }
+                
+                if (this.state === 'waiting') {
+                    clearTimeout(this.timeoutId);
+                    this.showTooEarly();
+                } else if (this.state === 'ready') {
+                    const reactionTime = Math.round(performance.now() - this.startTime);
+                    this.performanceMonitor.end();
+                    
+                    // 记录点击用于反作弊检测
+                    this.antiCheat.recordClick(performance.now());
+                    
+                    const cheatType = this.antiCheat.detectAnomalies();
+                    if (cheatType === 'impossible') {
+                        this.parent.showCheatWarning('检测到不可能的反应速度，请正常测试！');
+                        return;
+                    }
+                    
+                    this.showResult(reactionTime);
+                }
+            }
+            
+            showTooEarly() {
+                this.state = 'too-early';
+                const waitingArea = document.getElementById('waitingArea');
+                waitingArea.className = 'waiting-area too-early';
+                waitingArea.innerHTML = `
+                    <div class="status-text">太早了！</div>
+                    <div class="instruction-text">请等待绿色信号</div>
+                `;
+                
+                setTimeout(() => {
+                    this.showStartScreen();
+                }, 2000);
+            }
+            
+            showResult(time) {
+                this.state = 'result';
+                const rating = this.getRating(time);
+                const ratingClass = this.getRatingClass(rating);
+                
+                this.parent.gameArea.innerHTML = `
+                    <div class="result-display">
+                        <div class="reaction-time">${time} ms</div>
+                        <div class="reaction-label">你的反应时间</div>
+                        <div class="rating ${ratingClass}">${rating}</div>
+                        <button class="btn btn-primary" onclick="speedTestCenter.reactionTest.showStartScreen()">再试一次</button>
+                    </div>
+                `;
+                
+                this.saveResult(time);
+                this.checkAchievements(time);
+            }
+            
+            getRating(time) {
+                if (time < 150) return '超人类';
+                if (time < 200) return '闪电般';
+                if (time < 250) return '极快';
+                if (time < 300) return '很快';
+                if (time < 350) return '快';
+                if (time < 400) return '正常';
+                if (time < 500) return '较慢';
+                return '慢';
+            }
+            
+            getRatingClass(rating) {
+                const ratings = {
+                    '超人类': 'excellent',
+                    '闪电般': 'excellent',
+                    '极快': 'excellent',
+                    '很快': 'good',
+                    '快': 'good',
+                    '正常': 'average',
+                    '较慢': 'average',
+                    '慢': 'slow'
+                };
+                return ratings[rating] || 'average';
+            }
+            
+            saveResult(time) {
+                const result = {
+                    time: time,
+                    date: new Date().toLocaleString('zh-CN'),
+                    mode: this.mode,
+                    type: 'reaction',
+                    performance: this.performanceMonitor.getMetrics()
+                };
+                
+                this.history.unshift(result);
+                if (this.history.length > 10) {
+                    this.history = this.history.slice(0, 10);
+                }
+                
+                localStorage.setItem('reactionHistory', JSON.stringify(this.history));
+                
+                if (!this.bestTime || time < this.bestTime) {
+                    this.bestTime = time;
+                    localStorage.setItem('reactionBestTime', this.bestTime);
+                }
+                
+                this.updateStats();
+                this.displayHistory();
+            }
+            
+            checkAchievements(time) {
+                let title = '';
+                let desc = '';
+                
+                if (!this.bestTime || time < this.bestTime) {
+                    title = '🏆 新纪录！';
+                    desc = `最佳成绩：${time}ms`;
+                } else if (time < 150) {
+                    title = '👑 超人类反应！';
+                    desc = '你的反应速度超越了人类极限！';
+                } else if (time < 200) {
+                    title = '⚡ 闪电反应！';
+                    desc = '你的反应速度超越了99%的人！';
+                } else if (this.history.length === 5) {
+                    title = '🎯 坚持不懈！';
+                    desc = '已完成5次测试';
+                } else if (this.history.length === 10) {
+                    title = '🌟 反应大师！';
+                    desc = '已完成10次测试';
+                }
+                
+                if (title) {
+                    this.parent.showAchievement(title, desc);
+                }
+            }
+            
+            updateStats() {
+                this.parent.bestTimeEl.textContent = this.bestTime ? `${this.bestTime}ms` : '--';
+                this.parent.totalTestsEl.textContent = this.history.length;
+                
+                if (this.history.length > 0) {
+                    const avg = Math.round(this.history.reduce((sum, r) => sum + r.time, 0) / this.history.length);
+                    this.parent.avgTimeEl.textContent = `${avg}ms`;
+                    
+                    const progress = Math.min((this.history.length / 10) * 100, 100);
+                    this.parent.progressBar.style.width = `${progress}%`;
+                } else {
+                    this.parent.avgTimeEl.textContent = '--';
+                    this.parent.progressBar.style.width = '0%';
+                }
+            }
+            
+            displayHistory() {
+                if (this.history.length === 0) {
+                    this.parent.historyList.innerHTML = '<p style="color: rgba(255, 255, 255, 0.5); text-align: center;">暂无测试记录</p>';
+                    return;
+                }
+                
+                this.parent.historyList.innerHTML = this.history.map((result, index) => `
+                    <div class="history-item">
+                        <div>
+                            <span class="history-time">${result.time}ms</span>
+                            <span style="margin-left: 1rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.5);">
+                                ${result.mode === 'easy' ? '简单' : result.mode === 'normal' ? '普通' : '困难'}模式
+                            </span>
+                        </div>
+                        <span class="history-date">${result.date}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        class CPSTest {
+            constructor(parent) {
+                this.parent = parent;
+                this.history = JSON.parse(localStorage.getItem('cpsHistory')) || [];
+                this.bestCPS = localStorage.getItem('cpsBest') || null;
+                this.duration = 5;
+                this.durationOptions = [5, 10, 30];
+                
+                this.state = 'idle';
+                this.clicks = 0;
+                this.startTime = null;
+                this.timerInterval = null;
+                this.antiCheat = new AntiCheatSystem();
+                this.clickPositions = [];
+            }
+            
+            showStartScreen() {
+                this.state = 'idle';
+                this.parent.gameArea.innerHTML = `
+                    <div class="start-screen">
+                        <h1>🖱️ CPS 测试</h1>
+                        <p>测试你的点击速度！<br>在限定时间内尽可能多地点击！</p>
+                        
+                        <div class="duration-selector">
+                            <button class="duration-btn active" data-duration="5">5秒</button>
+                            <button class="duration-btn" data-duration="10">10秒</button>
+                            <button class="duration-btn" data-duration="30">30秒</button>
+                        </div>
+
+                        <button class="btn btn-primary" id="startCPSBtn">开始测试</button>
+                    </div>
+                `;
+                
+                const startBtn = document.getElementById('startCPSBtn');
+                startBtn.addEventListener('click', () => this.startTest());
+                
+                // 时长选择
+                document.querySelectorAll('.duration-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.duration = parseInt(e.target.dataset.duration);
+                    });
+                });
+            }
+            
+            startTest() {
+                this.state = 'ready';
+                this.clicks = 0;
+                this.clickPositions = [];
+                
+                this.parent.gameArea.innerHTML = `
+                    <div class="cps-area" id="cpsArea">
+                        <div class="cps-timer" id="cpsTimer">${this.duration}</div>
+                        <div class="cps-display" id="cpsDisplay">0</div>
+                        <div class="cps-label">CPS</div>
+                        <div class="cps-instruction">点击开始计时！</div>
+                    </div>
+                `;
+                
+                const cpsArea = document.getElementById('cpsArea');
+                cpsArea.addEventListener('click', (e) => this.handleClick(e));
+                cpsArea.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+                cpsArea.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+            }
+            
+            handleTouchStart(e) {
+                e.preventDefault();
+                for (let touch of e.changedTouches) {
+                    this.antiCheat.recordTouch(touch.identifier);
+                }
+            }
+            
+            handleTouchEnd(e) {
+                e.preventDefault();
+                this.antiCheat.clearTouchPoints();
+                
+                // 模拟点击事件
+                const clickEvent = new MouseEvent('click', {
+                    clientX: e.changedTouches[0].clientX,
+                    clientY: e.changedTouches[0].clientY
+                });
+                e.target.dispatchEvent(clickEvent);
+            }
+            
+            handleClick(e) {
+                // 检测多指触控作弊
+                if (this.antiCheat.checkMultiTouch()) {
+                    this.parent.showCheatWarning('检测到多指触控，请使用单指进行测试！');
+                    return;
+                }
+                
+                if (this.state === 'ready') {
+                    this.state = 'counting';
+                    this.startTime = performance.now();
+                    this.clicks = 1;
+                    
+                    const cpsArea = document.getElementById('cpsArea');
+                    cpsArea.classList.add('counting');
+                    document.getElementById('cpsDisplay').textContent = '1';
+                    document.querySelector('.cps-instruction').textContent = '快速点击！';
+                    
+                    this.startTimer();
+                    this.createClickEffect(e);
+                    this.recordClickPosition(e);
+                } else if (this.state === 'counting') {
+                    this.clicks++;
+                    document.getElementById('cpsDisplay').textContent = this.clicks;
+                    this.createClickEffect(e);
+                    this.createParticles(e);
+                    this.recordClickPosition(e);
+                    
+                    // 记录点击用于反作弊检测
+                    this.antiCheat.recordClick(performance.now());
+                    
+                    // 检测异常点击模式
+                    const cheatType = this.antiCheat.detectAnomalies();
+                    if (cheatType === 'robotic') {
+                        this.parent.showCheatWarning('检测到异常点击模式，请正常进行测试！');
+                    }
+                }
+            }
+            
+            recordClickPosition(e) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                this.clickPositions.push({ x, y, time: performance.now() });
+                
+                // 保持最近50次点击位置
+                if (this.clickPositions.length > 50) {
+                    this.clickPositions.shift();
+                }
+                
+                // 检测是否总是在同一位置点击（可能的自动点击器）
+                if (this.clickPositions.length >= 10) {
+                    const recentPositions = this.clickPositions.slice(-10);
+                    const avgX = recentPositions.reduce((sum, p) => sum + p.x, 0) / recentPositions.length;
+                    const avgY = recentPositions.reduce((sum, p) => sum + p.y, 0) / recentPositions.length;
+                    
+                    const variance = recentPositions.reduce((sum, p) => {
+                        return sum + Math.pow(p.x - avgX, 2) + Math.pow(p.y - avgY, 2);
+                    }, 0) / recentPositions.length;
+                    
+                    // 方差太小说明点击位置过于集中
+                    if (variance < 100) {
+                        this.parent.showCheatWarning('检测到异常点击位置，请手动点击！');
+                    }
+                }
+            }
+            
+            startTimer() {
+                let timeLeft = this.duration;
+                const timerEl = document.getElementById('cpsTimer');
+                
+                this.timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerEl.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        this.endTest();
+                    }
+                }, 1000);
+            }
+            
+            endTest() {
+                clearInterval(this.timerInterval);
+                this.state = 'result';
+                
+                const elapsedTime = this.duration;
+                const cps = (this.clicks / elapsedTime).toFixed(2);
+                
+                this.parent.gameArea.innerHTML = `
+                    <div class="cps-result">
+                        <div class="cps-score">${cps}</div>
+                        <div class="reaction-label">每秒点击次数 (CPS)</div>
+                        
+                        <div class="cps-details">
+                            <div class="cps-detail-item">
+                                <div class="cps-detail-value">${this.clicks}</div>
+                                <div class="cps-detail-label">总点击数</div>
+                            </div>
+                            <div class="cps-detail-item">
+                                <div class="cps-detail-value">${this.duration}秒</div>
+                                <div class="cps-detail-label">测试时长</div>
+                            </div>
+                        </div>
+                        
+                        <div class="rating ${this.getCPSRatingClass(cps)}">${this.getCPSRating(cps)}</div>
+                        
+                        <button class="btn btn-primary" onclick="speedTestCenter.cpsTest.showStartScreen()">再试一次</button>
+                    </div>
+                `;
+                
+                this.saveResult(cps, this.clicks);
+                this.checkAchievements(cps, this.clicks);
+            }
+            
+            createClickEffect(e) {
+                const effect = document.createElement('div');
+                effect.className = 'click-effect';
+                const rect = e.currentTarget.getBoundingClientRect();
+                effect.style.left = (e.clientX - rect.left - 30) + 'px';
+                effect.style.top = (e.clientY - rect.top - 30) + 'px';
+                document.getElementById('cpsArea').appendChild(effect);
+                
+                setTimeout(() => {
+                    effect.remove();
+                }, 800);
+            }
+            
+            createParticles(e) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const velocity = 50 + Math.random() * 50;
+                    particle.style.setProperty('--tx', Math.cos(angle) * velocity + 'px');
+                    particle.style.setProperty('--ty', Math.sin(angle) * velocity + 'px');
+                    
+                    document.getElementById('cpsArea').appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 1000);
+                }
+            }
+            
+            getCPSRating(cps) {
+                if (cps >= 15) return '点击之神';
+                if (cps >= 12) return '点击大师';
+                if (cps >= 10) return '点击高手';
+                if (cps >= 8) return '点击达人';
+                if (cps >= 6) return '点击能手';
+                if (cps >= 4) return '普通水平';
+                return '需要练习';
+            }
+            
+            getCPSRatingClass(cps) {
+                if (cps >= 12) return 'excellent';
+                if (cps >= 8) return 'good';
+                if (cps >= 6) return 'average';
+                return 'slow';
+            }
+            
+            saveResult(cps, clicks) {
+                const result = {
+                    cps: parseFloat(cps),
+                    clicks: clicks,
+                    duration: this.duration,
+                    date: new Date().toLocaleString('zh-CN'),
+                    type: 'cps'
+                };
+                
+                this.history.unshift(result);
+                if (this.history.length > 10) {
+                    this.history = this.history.slice(0, 10);
+                }
+                
+                localStorage.setItem('cpsHistory', JSON.stringify(this.history));
+                
+                if (!this.bestCPS || cps > this.bestCPS) {
+                    this.bestCPS = cps;
+                    localStorage.setItem('cpsBest', this.bestCPS);
+                }
+                
+                this.updateStats();
+                this.displayHistory();
+            }
+            
+            checkAchievements(cps, clicks) {
+                let title = '';
+                let desc = '';
+                
+                if (!this.bestCPS || cps > this.bestCPS) {
+                    title = '🏆 新纪录！';
+                    desc = `最佳CPS：${cps}`;
+                } else if (cps >= 15) {
+                    title = '👑 点击之神！';
+                    desc = '你的点击速度已达神级境界！';
+                } else if (cps >= 12) {
+                    title = '🔥 点击大师！';
+                    desc = '你的点击速度令人惊叹！';
+                } else if (clicks >= 150 && this.duration === 10) {
+                    title = '💪 百五连击！';
+                    desc = '10秒内点击超过150次！';
+                } else if (this.history.length === 5) {
+                    title = '🎯 坚持不懈！';
+                    desc = '已完成5次CPS测试';
+                } else if (this.history.length === 10) {
+                    title = '🌟 点击专家！';
+                    desc = '已完成10次CPS测试';
+                }
+                
+                if (title) {
+                    this.parent.showAchievement(title, desc);
+                }
+            }
+            
+            updateStats() {
+                this.parent.bestTimeEl.textContent = this.bestCPS ? `${this.bestCPS} CPS` : '--';
+                this.parent.totalTestsEl.textContent = this.history.length;
+                
+                if (this.history.length > 0) {
+                    const avg = (this.history.reduce((sum, r) => sum + r.cps, 0) / this.history.length).toFixed(2);
+                    this.parent.avgTimeEl.textContent = `${avg} CPS`;
+                    
+                    const progress = Math.min((this.history.length / 10) * 100, 100);
+                    this.parent.progressBar.style.width = `${progress}%`;
+                } else {
+                    this.parent.avgTimeEl.textContent = '--';
+                    this.parent.progressBar.style.width = '0%';
+                }
+            }
+            
+            displayHistory() {
+                if (this.history.length === 0) {
+                    this.parent.historyList.innerHTML = '<p style="color: rgba(255, 255, 255, 0.5); text-align: center;">暂无测试记录</p>';
+                    return;
+                }
+                
+                this.parent.historyList.innerHTML = this.history.map((result, index) => `
+                    <div class="history-item">
+                        <div>
+                            <span class="history-time">${result.cps} CPS</span>
+                            <span style="margin-left: 1rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.5);">
+                                ${result.clicks}次/${result.duration}秒
+                            </span>
+                        </div>
+                        <span class="history-date">${result.date}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        class PerformanceMonitor {
+            constructor() {
+                this.startTime = null;
+                this.endTime = null;
+                this.frameCount = 0;
+                this.jankCount = 0;
+                this.lastFrameTime = null;
+            }
+            
+            start() {
+                this.startTime = performance.now();
+                this.frameCount = 0;
+                this.jankCount = 0;
+                this.lastFrameTime = this.startTime;
+                this.monitorFrames();
+            }
+            
+            end() {
+                this.endTime = performance.now();
+            }
+            
+            monitorFrames() {
+                const now = performance.now();
+                const frameDelta = now - this.lastFrameTime;
+                
+                this.frameCount++;
+                
+                // 检测卡顿（超过16.67ms的帧）
+                if (frameDelta > 16.67 * 2) {
+                    this.jankCount++;
+                }
+                
+                this.lastFrameTime = now;
+                
+                if (this.endTime === null) {
+                    requestAnimationFrame(() => this.monitorFrames());
+                }
+            }
+            
+            getMetrics() {
+                const totalTime = this.endTime - this.startTime;
+                return {
+                    totalTime: totalTime,
+                    frameCount: this.frameCount,
+                    jankCount: this.jankCount,
+                    avgFrameTime: totalTime / this.frameCount,
+                    jankRate: (this.jankCount / this.frameCount * 100).toFixed(2)
+                };
+            }
+        }
+
+        const speedTestCenter = new SpeedTestCenter();
+    </script>
+</body>
+</html>
